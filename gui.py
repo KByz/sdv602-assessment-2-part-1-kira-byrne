@@ -65,7 +65,7 @@ window = sg.Window(
      location=(0, 0),
      finalize=True,
      element_justification='center',
-     font='Helvetica 18', 
+     font='Helvetica 18',
     )
 
 # Add graph to the window
