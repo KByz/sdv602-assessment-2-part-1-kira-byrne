@@ -27,73 +27,38 @@ This will include:
     4. A live chat function
 
 """""
-import os.path
-import PySimpleGUI as sg
-import matplotlib as matplotlib
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import graphs as grph
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import PySimpleGUI as sg #import GUI library
+import matplotlib as mpl #import matplotlib library
+import matplotlib.pyplot as plt #import graph plotting library from matplotlib
+import numpy as np #import numpy library
+import graphs as grph #import graphs.py file
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg #import canvas for graphs
 
-fig = matplotlib.figure.Figure(figsize=(5, 4), dpi=100)
-t = np.arange(0, 3, .01)
-fig.add_subplot(111).plot(t, 2 * np.sin(2 * np.pi * t))
+#use TkAgg backend for matplotlib
+mpl.use('TkAgg')
 
-matplotlib.use('TkAgg')
-
-def draw_graph(canvas, figure):
-    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
-    figure_canvas_agg.draw()
-    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
-    return figure_canvas_agg
-
-data_select_column = [
-    [sg.Text('Select Data to Display')],
-    sg.In(size=(25, 1), enable_events=True, key='-FILE-'),
-    sg.FileBrowse(),
-],
-
-[
-        sg.Listbox(
-             values=[], enable_events=True, size=(40, 20), key='-FILE LIST-'
-        )
-]
-
-graph_canvas = [
-    [sg.Text('Select a graph to display')],
-    [sg.Text(size=(40, 1), key='-TOUT-')],
-    [sg.Image(key='-IMAGE-')],
-]
-
-#layout 2
+"""
+Create layout for main window.
+sg.Text - define title
+sg. Canvas - draw canvas for elements
+sg.Input - define input field for username and password
+sg.Button - define buttons for each graph type
+"""
 layout = [
     [sg.Text("Graphing Prototype")],
     [sg.Canvas(key='-CANVAS-')],
-    [sg.Text ("Enter Username: "), sg.Input(key="-USERNAME-", do_not_clear=False, size=(30, 1))],
+    [sg.Text ("Enter Username: "), sg.Input(key="-USERNAME-", do_not_clear=False, size=(30, 1),)],
     [sg.Text ("Enter Password: "), sg.InputText('', key="-PASSWORD-", password_char='*', size=(15, 1))],
     [sg.Button('Pie Chart'), sg.Button('Bar Chart'), sg.Button('Trend Chart'), sg.Exit(button_color='red')]
 ]
 
-"""
-LAYOUT 1
+#create child window class for graph buttons
+child_window = sg.Window("Graph Window", modal=True)
 
-layout = [
-    [
-     sg.Column(data_select_column),
-     sg.VSeperator(),
-    sg.Column(graph_canvas),
-    ],
-    [sg.Text('Data Exploration Prototype')],
-    [sg.Button('Pie Chart')],
-    [sg.Button('Bar Chart')],
-    [sg.Button('Trend Chart')]
-    
-    ]
-"""
 
-#draw new window
-window = sg.Window(
+
+#draw main parent window
+main = sg.Window(
      'Data Exploration Prototype', 
      layout, 
      size=(800, 700),
@@ -103,21 +68,40 @@ window = sg.Window(
      font='Helvetica 18',
     )
 
-# Add graph to the window
-draw_graph(window['-CANVAS-'].TKCanvas, fig)
 
-event, values = window.read()
-
-
+"""
+Event loop for the main window.
+Each button opens child window.
+Child window returns graph from graphs.gui.py
+"""
 while True:
-        event, values = window.read()
-        if event == 'Pie Chart':
-             plt.show(grph.pie_chart()),
-        elif event == 'Bar Chart':
-             plt.show(grph.bar_chart()),
-        elif event == 'Trend Chart':
-             plt.show(grph.trend_chart()),
-        elif  event == sg.WIN_CLOSED or event == 'Exit':
+        event, values = main.read()
+        if event == 'Pie Chart': #button event opens child window
+            child_window = sg.Window("Pie Chart", modal=True) #matplotlib draws graph on child window
+            plt.show(grph.pie_chart())
+            child_window.read()
+            child_window.close()
+            
+        elif event == 'Bar Chart': #button event opens child window
+            child_window = sg.Window("Bar Chart", modal=True) #matplotlib draws graph on child window
+            plt.show(grph.bar_chart())
+            child_window.read()
+            child_window.close()
+            
+        elif event == 'Trend Chart': #button event opens child window
+            child_window = sg.Window("Trend Chart", modal=True) #matplotlib draws graph on child window
+            plt.show(grph.trend_chart())
+            child_window.read()
+            child_window.close()
+            
+        elif event == sg.WIN_CLOSED or event == 'Exit': #break loop and close window
             break
 
-window.close()
+
+"""
+Run main window and close on exit.
+"""
+if __name__=="__main__": 
+     main()
+
+main.close()
